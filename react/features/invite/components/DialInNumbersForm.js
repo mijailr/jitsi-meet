@@ -195,7 +195,7 @@ class DialInNumbersForm extends Component {
     }
 
     /**
-     * Creates a React {@code Component} with a redonly HTMLInputElement as a
+     * Creates a React {@code Component} with a readonly HTMLInputElement as a
      * trigger for displaying the dropdown menu. The {@code Component} will also
      * display the currently selected number.
      *
@@ -273,7 +273,7 @@ class DialInNumbersForm extends Component {
             return [];
         }
 
-        const formattedNumbeers = phoneRegions.map(region => {
+        const formattedNumbers = phoneRegions.map(region => {
             const numbers = dialInNumbers[region];
 
             return numbers.map(number => {
@@ -284,7 +284,7 @@ class DialInNumbersForm extends Component {
             });
         });
 
-        return Array.prototype.concat(...formattedNumbeers);
+        return Array.prototype.concat(...formattedNumbers);
     }
 
     /**
