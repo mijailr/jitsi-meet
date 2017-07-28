@@ -51,10 +51,8 @@
         height:196px;
         padding: 0;
         /* The filmstrip should not be covered by the left toolbar. */
-        padding-left: $defaultToolbarSize + 5;
         bottom: 0;
         width:auto;
-        border: $thumbnailsBorder solid transparent;
         z-index: $filmstripVideosZ;
         transition: bottom 2s;
         overflow: visible !important;
@@ -62,8 +60,17 @@
         videos. */
         font-size: 0pt;
 
+        &#remoteVideos {
+            border: $thumbnailsBorder solid transparent;
+            padding-left: $defaultToolbarSize + 5;
+       }
+
         &.hidden {
             bottom: -196px;
+        }
+
+        .remote-videos-container {
+            display: flex;
         }
 
         .videocontainer {
@@ -128,6 +135,14 @@
     &__videos-filmstripOnly {
         margin-top: auto;
         margin-bottom: auto;
-        padding-right: $defaultToolbarSize;
+    }
+
+    .remote-videos-container {
+        transition: opacity 1s;
+
+        &.hide-videos {
+            opacity: 0;
+            pointer-events: none;
+        }
     }
 }

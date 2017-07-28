@@ -4,7 +4,7 @@
  * Load the integration of a third-party analytics API such as Google
  * Analytics. Since we cannot guarantee the quality of the third-party service
  * (e.g. their server may take noticeably long time to respond), it is in our
- * best interest (in the sense that the intergration of the analytics API is
+ * best interest (in the sense that the integration of the analytics API is
  * important to us but not enough to allow it to prevent people from joining
  * a conference) to download the API asynchronously. Additionally, Google
  * Analytics will download its implementation asynchronously anyway so it makes
@@ -77,7 +77,7 @@ class Analytics {
             Promise.all(handlersPromises).then(values => {
                 values.forEach(el => {
                     if(el.type === "error") {
-                        console.log("Fialed to load " + el.url);
+                        console.log("Failed to load " + el.url);
                         console.error(el.error);
                     }
                 });
@@ -121,6 +121,16 @@ class Analytics {
                 }
                 if (group) {
                     permanentProperties.group = group;
+                }
+                 // optionally include local deployment information based on
+                 // the contents of window.config.deploymentInfo
+                if (config.deploymentInfo) {
+                    for (let key in config.deploymentInfo) {
+                        if (config.deploymentInfo.hasOwnProperty(key)) {
+                            permanentProperties[key]
+                                = config.deploymentInfo[key];
+                        }
+                    }
                 }
 
                 analytics.addPermanentProperties(permanentProperties);

@@ -54,5 +54,4 @@ declare module 'redux' {
   declare function combineReducers<O: Object, A>(reducers: O): CombinedReducer<$ObjMap<O, <S>(r: Reducer<S, any>) => S>, A>;
 
   declare function compose<S, A>(...fns: Array<StoreEnhancer<S, A>>): Function;
-
 }

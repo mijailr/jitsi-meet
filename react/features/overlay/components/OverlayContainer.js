@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { CallOverlay } from '../../jwt';
+
 import PageReloadFilmstripOnlyOverlay from './PageReloadFilmstripOnlyOverlay';
 import PageReloadOverlay from './PageReloadOverlay';
 import SuspendedFilmstripOnlyOverlay from './SuspendedFilmstripOnlyOverlay';
@@ -32,6 +34,15 @@ class OverlayContainer extends Component {
          * @type {string}
          */
         _browser: React.PropTypes.string,
+
+        /**
+         * The indicator which determines whether the {@link CallOverlay} is
+         * displayed/visible.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _callOverlayVisible: React.PropTypes.bool,
 
         /**
          * The indicator which determines whether the status of the
@@ -97,7 +108,7 @@ class OverlayContainer extends Component {
          * @type {string}
          */
         _suspendDetected: React.PropTypes.bool
-    }
+    };
 
     /**
      * Initializes a new ReloadTimer instance.
@@ -111,11 +122,14 @@ class OverlayContainer extends Component {
 
         this.state = {
             /**
-             * Indicates whether the filmstrip only mode is enabled or not.
+             * The indicator which determines whether filmstrip-only mode is
+             * enabled.
              *
              * @type {boolean}
              */
-            filmstripOnly: interfaceConfig.filmStripOnly
+            filmstripOnly:
+                typeof interfaceConfig === 'object'
+                    && interfaceConfig.filmStripOnly
         };
     }
 
@@ -127,11 +141,13 @@ class OverlayContainer extends Component {
      * @protected
      */
     componentDidUpdate() {
-        // FIXME: Temporary workaround until everything is moved to react.
-        APP.UI.overlayVisible
-            = (this.props._connectionEstablished && this.props._haveToReload)
-                || this.props._suspendDetected
-                || this.props._isMediaPermissionPromptVisible;
+        if (typeof APP === 'object') {
+            APP.UI.overlayVisible
+                = (this.props._connectionEstablished
+                        && this.props._haveToReload)
+                    || this.props._suspendDetected
+                    || this.props._isMediaPermissionPromptVisible;
+        }
     }
 
     /**
@@ -164,7 +180,11 @@ class OverlayContainer extends Component {
                 = filmstripOnly
                     ? UserMediaPermissionsFilmstripOnlyOverlay
                     : UserMediaPermissionsOverlay;
-            props = { browser: this.props._browser };
+            props = {
+                browser: this.props._browser
+            };
+        } else if (this.props._callOverlayVisible) {
+            overlayComponent = CallOverlay;
         }
 
         return (
@@ -175,17 +195,18 @@ class OverlayContainer extends Component {
 }
 
 /**
- * Maps (parts of) the Redux state to the associated OverlayContainer's props.
+ * Maps (parts of) the redux state to the associated OverlayContainer's props.
  *
- * @param {Object} state - The Redux state.
+ * @param {Object} state - The redux state.
  * @returns {{
  *     _browser: string,
- *     _connectionEstablished: bool,
- *     _haveToReload: bool,
- *     _isNetworkFailure: bool,
- *     _isMediaPermissionPromptVisible: bool,
+ *     _callOverlayVisible: boolean,
+ *     _connectionEstablished: boolean,
+ *     _haveToReload: boolean,
+ *     _isNetworkFailure: boolean,
+ *     _isMediaPermissionPromptVisible: boolean,
  *     _reason: string,
- *     _suspendDetected: bool
+ *     _suspendDetected: boolean
  * }}
  * @private
  */
@@ -196,7 +217,7 @@ function _mapStateToProps(state) {
         /**
          * The browser which is used currently.
          *
-         * NOTE: Used by UserMediaPermissionsOverlay only.
+         * NOTE: Used by {@link UserMediaPermissionsOverlay} only.
          *
          * @private
          * @type {string}
@@ -204,10 +225,19 @@ function _mapStateToProps(state) {
         _browser: stateFeaturesOverlay.browser,
 
         /**
+         * The indicator which determines whether the {@link CallOverlay} is
+         * displayed/visible.
+         *
+         * @private
+         * @type {boolean}
+         */
+        _callOverlayVisible: Boolean(state['features/jwt'].callOverlayVisible),
+
+        /**
          * The indicator which determines whether the status of the
          * JitsiConnection object has been "established" or not.
          *
-         * NOTE: Used by PageReloadOverlay only.
+         * NOTE: Used by {@link PageReloadOverlay} only.
          *
          * @private
          * @type {boolean}
@@ -218,7 +248,7 @@ function _mapStateToProps(state) {
          * The indicator which determines whether a critical error for reload
          * has been received.
          *
-         * NOTE: Used by PageReloadOverlay only.
+         * NOTE: Used by {@link PageReloadOverlay} only.
          *
          * @private
          * @type {boolean}
@@ -229,7 +259,7 @@ function _mapStateToProps(state) {
          * The indicator which determines whether the GUM permissions prompt is
          * displayed or not.
          *
-         * NOTE: Used by UserMediaPermissionsOverlay only.
+         * NOTE: Used by {@link UserMediaPermissionsOverlay} only.
          *
          * @private
          * @type {boolean}
@@ -241,7 +271,7 @@ function _mapStateToProps(state) {
          * The indicator which determines whether the reload was caused by
          * network failure.
          *
-         * NOTE: Used by PageReloadOverlay only.
+         * NOTE: Used by {@link PageReloadOverlay} only.
          *
          * @private
          * @type {boolean}
@@ -251,7 +281,7 @@ function _mapStateToProps(state) {
         /**
          * The reason for the error that will cause the reload.
          *
-         * NOTE: Used by PageReloadOverlay only.
+         * NOTE: Used by {@link PageReloadOverlay} only.
          *
          * @private
          * @type {string}
@@ -262,7 +292,7 @@ function _mapStateToProps(state) {
          * The indicator which determines whether the GUM permissions prompt is
          * displayed or not.
          *
-         * NOTE: Used by SuspendedOverlay only.
+         * NOTE: Used by {@link SuspendedOverlay} only.
          *
          * @private
          * @type {string}

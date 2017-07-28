@@ -3,16 +3,18 @@
 import Recording from '../../../modules/UI/recording/Recording';
 import SideContainerToggler
     from '../../../modules/UI/side_pannels/SideContainerToggler';
-import UIEvents from '../../../service/UI/UIEvents';
 import UIUtil from '../../../modules/UI/util/UIUtil';
+import UIEvents from '../../../service/UI/UIEvents';
 
 import {
+    changeLocalRaiseHand,
     clearToolboxTimeout,
     setSubjectSlideIn,
     setToolbarButton,
     setToolboxTimeout,
     setToolboxTimeoutMS,
     setToolboxVisible,
+    toggleFullScreen,
     toggleToolbarButton
 } from './actions.native';
 import { SET_DEFAULT_TOOLBOX_BUTTONS } from './actionTypes';
@@ -35,7 +37,6 @@ export function checkAutoEnableDesktopSharing(): Function {
     return () => {
         // XXX Should use dispatcher to toggle screensharing but screensharing
         // hasn't been React-ified yet.
-
         if (UIUtil.isButtonEnabled('desktop')
                 && config.autoEnableDesktopSharing) {
             APP.UI.eventEmitter.emit(UIEvents.TOGGLE_SCREENSHARING);
@@ -55,8 +56,7 @@ export function dockToolbox(dock: boolean): Function {
             return;
         }
 
-        const state = getState();
-        const { timeoutMS, visible } = state['features/toolbox'];
+        const { timeoutMS, visible } = getState()['features/toolbox'];
 
         if (dock) {
             // First make sure the toolbox is shown.
@@ -70,6 +70,86 @@ export function dockToolbox(dock: boolean): Function {
                     timeoutMS));
         } else {
             dispatch(showToolbox());
+        }
+    };
+}
+
+/**
+ * Returns button on mount/unmount handlers with dispatch function stored in
+ * closure.
+ *
+ * @param {Function} dispatch - Redux action dispatcher.
+ * @param {Function} getState - The function fetching the Redux state.
+ * @returns {Object} Button on mount/unmount handlers.
+ * @private
+ */
+function _getButtonHandlers(dispatch, getState) {
+    const localRaiseHandHandler
+        = (...args) => dispatch(changeLocalRaiseHand(...args));
+    const toggleFullScreenHandler
+        = (...args) => dispatch(toggleFullScreen(...args));
+
+    return {
+        /**
+         * Mount handler for desktop button.
+         *
+         * @type {Object}
+         */
+        desktop: {
+            onMount: () => dispatch(showDesktopSharingButton())
+        },
+
+        /**
+         * Mount/Unmount handler for toggling fullscreen button.
+         *
+         * @type {Object}
+         */
+        fullscreen: {
+            onMount: () =>
+                APP.UI.addListener(
+                    UIEvents.FULLSCREEN_TOGGLED,
+                    toggleFullScreenHandler),
+            onUnmount: () =>
+                APP.UI.removeListener(
+                    UIEvents.FULLSCREEN_TOGGLED,
+                    toggleFullScreenHandler)
+        },
+
+        /**
+         * Mount handler for profile button.
+         *
+         * @type {Object}
+         */
+        profile: {
+            onMount: () =>
+                getState()['features/jwt']
+                    || dispatch(setProfileButtonUnclickable(true))
+        },
+
+        /**
+         * Mount/Unmount handlers for raisehand button.
+         *
+         * @type {button}
+         */
+        raisehand: {
+            onMount: () =>
+                APP.UI.addListener(
+                    UIEvents.LOCAL_RAISE_HAND_CHANGED,
+                    localRaiseHandHandler),
+            onUnmount: () =>
+                APP.UI.removeListener(
+                    UIEvents.LOCAL_RAISE_HAND_CHANGED,
+                    localRaiseHandHandler)
+        },
+
+        /**
+         * Mount handler for recording button.
+         *
+         * @type {Object}
+         */
+        recording: {
+            onMount: () =>
+                config.enableRecording && dispatch(showRecordingButton())
         }
     };
 }
@@ -98,7 +178,7 @@ export function hideToolbox(force: boolean = false): Function {
 
         if (!force
                 && (hovered
-                    || APP.UI.isRingOverlayVisible()
+                    || state['features/jwt'].callOverlayVisible
                     || SideContainerToggler.isVisible())) {
             dispatch(
                 setToolboxTimeout(
@@ -114,16 +194,18 @@ export function hideToolbox(force: boolean = false): Function {
 /**
  * Sets the default toolbar buttons of the Toolbox.
  *
- * @returns {{
- *     type: SET_DEFAULT_TOOLBOX_BUTTONS,
- *     primaryToolbarButtons: Map,
- *     secondaryToolbarButtons: Map
- * }}
+ * @returns {Function}
  */
-export function setDefaultToolboxButtons(): Object {
-    return {
-        type: SET_DEFAULT_TOOLBOX_BUTTONS,
-        ...getDefaultToolboxButtons()
+export function setDefaultToolboxButtons(): Function {
+    return (dispatch: Dispatch, getState: Function) => {
+        // Save dispatch function in closure.
+        const buttonHandlers = _getButtonHandlers(dispatch, getState);
+        const toolboxButtons = getDefaultToolboxButtons(buttonHandlers);
+
+        dispatch({
+            type: SET_DEFAULT_TOOLBOX_BUTTONS,
+            ...toolboxButtons
+        });
     };
 }
 
@@ -153,13 +235,22 @@ export function setProfileButtonUnclickable(unclickable: boolean): Function {
 export function showDesktopSharingButton(): Function {
     return (dispatch: Dispatch<*>) => {
         const buttonName = 'desktop';
+        const disabledTooltipText
+            = APP.conference.desktopSharingDisabledTooltip;
+        const showTooltip
+            = disabledTooltipText
+                && APP.conference.isDesktopSharingDisabledByConfig;
         const visible
-            = APP.conference.isDesktopSharingEnabled
-                && UIUtil.isButtonEnabled(buttonName);
+            = UIUtil.isButtonEnabled(buttonName)
+                && (APP.conference.isDesktopSharingEnabled || showTooltip);
 
-        dispatch(setToolbarButton(buttonName, {
-            hidden: !visible
-        }));
+        const newState = {
+            enabled: APP.conference.isDesktopSharingEnabled,
+            hidden: !visible,
+            tooltipText: showTooltip ? disabledTooltipText : undefined
+        };
+
+        dispatch(setToolbarButton(buttonName, newState));
     };
 }
 
@@ -215,14 +306,15 @@ export function showSharedVideoButton(): Function {
 }
 
 /**
- * Shows SIP call button if it's required and appropriate flag is passed.
+ * Shows the dial out button if it's required and appropriate
+ * flag is passed.
  *
  * @param {boolean} show - Flag showing whether to show button or not.
  * @returns {Function}
  */
-export function showSIPCallButton(show: boolean): Function {
+export function showDialOutButton(show: boolean): Function {
     return (dispatch: Dispatch<*>, getState: Function) => {
-        const buttonName = 'sip';
+        const buttonName = 'dialout';
 
         if (show
                 && APP.conference.sipGatewayEnabled()
@@ -277,8 +369,7 @@ export function showToolbox(timeout: number = 0): Object {
  */
 export function toggleSideToolbarContainer(containerId: string): Function {
     return (dispatch: Dispatch, getState: Function) => {
-        const state = getState();
-        const { secondaryToolbarButtons } = state['features/toolbox'];
+        const { secondaryToolbarButtons } = getState()['features/toolbox'];
 
         for (const key of secondaryToolbarButtons.keys()) {
             const isButtonEnabled = UIUtil.isButtonEnabled(key);

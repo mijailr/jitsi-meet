@@ -91,11 +91,12 @@
         "title": "__app__ needs to use your microphone and camera."
     },
     "suspendedoverlay": {
-        "title": "Your video call was interrupted, because this computer went to sleep.",
-        "text": "Press <i>Rejoin</i> button to connect back to your conversation.",
+        "title": "Your video call was interrupted because this computer went to sleep.",
+        "text": "Press the <i>Rejoin</i> button to reconnect.",
         "rejoinKeyTitle": "Rejoin"
     },
     "toolbar": {
+        "addPeople": "Add people to your call",
         "audioonly": "Enable / Disable audio only mode (saves bandwidth)",
         "mute": "Mute / Unmute",
         "videomute": "Start / Stop camera",
@@ -199,7 +200,8 @@
         "transport_plural": "Transports:",
         "bandwidth": "Estimated bandwidth:",
         "na": "Come back here for connection information once the conference starts",
-        "peer_to_peer": " (p2p)"
+        "peer_to_peer": " (p2p)",
+        "turn": " (turn)"
     },
     "notify": {
         "disconnected": "disconnected",
@@ -277,8 +279,6 @@
         "Save": "Save",
         "recording": "Recording",
         "recordingToken": "Enter recording token",
-        "Dial": "Dial",
-        "sipMsg": "Enter SIP number",
         "passwordCheck": "Are you sure you would like to remove your password?",
         "passwordMsg": "Set a password to lock your room",
         "shareLink": "Share the link to the call",
@@ -333,6 +333,8 @@
         "goToStore": "Go to the webstore",
         "externalInstallationTitle": "Extension required",
         "externalInstallationMsg": "You need to install our desktop sharing extension.",
+        "inlineInstallationMsg": "You need to install our desktop sharing extension.",
+        "inlineInstallExtension": "Install now",
         "muteParticipantTitle": "Mute this participant?",
         "muteParticipantBody": "You won't be able to unmute them, but they can unmute themselves at any time.",
         "muteParticipantButton": "Mute",
@@ -342,6 +344,7 @@
         "remoteControlDeniedMessage": "__user__ rejected your remote control request!",
         "remoteControlAllowedMessage": "__user__ accepted your remote control request!",
         "remoteControlErrorMessage": "An error occurred while trying to request remote control permissions from __user__!",
+        "startRemoteControlErrorMessage": "An error occurred while trying to start the remote control session!",
         "remoteControlStopMessage": "The remote control session ended!",
         "close": "Close",
         "shareYourScreen": "Share your screen",
@@ -436,21 +439,40 @@
     },
     "invite": {
         "addPassword": "Add password",
-        "dialInNumbers": "Dial-in telephone numbers",
-        "errorFetchingNumbers": "Failed to obtain dial-in numbers",
+        "callNumber": "Call __number__",
+        "enterID": "Enter Meeting ID: __conferenceID__ following by # to dial in from a phone",
+        "howToDialIn": "To dial in, use one of the following numbers and meeting ID",
         "hidePassword": "Hide password",
         "inviteTo": "Invite people to __conferenceName__",
-        "loadingNumbers": "Loading...",
+        "invitedYouTo": "__userName__ has invited you to the __inviteURL__ conference",
         "locked": "This call is locked. New callers must have the link and enter the password to join.",
-        "noNumbers": "No numbers available",
-        "numbersDisabled": "Dialing in has been disabled",
         "showPassword": "Show password",
         "unlocked": "This call is unlocked. Any new caller with the link may join the call."
     },
     "videoStatus": {
-        "hd": "HD",
-        "hdVideo": "HD video",
-        "sd": "SD",
-        "sdVideo": "SD video"
+      "hd": "HD",
+      "hdVideo": "HD video",
+      "sd": "SD",
+      "sdVideo": "SD video"
+    },
+    "dialOut": {
+        "dial": "Dial",
+        "dialOut": "Call a phone number",
+        "statusMessage": "is now __status__",
+        "enterPhone": "Enter phone number",
+        "phoneNotAllowed": "Oh, we don't support that destination yet! Sorry!"
+    },
+    "addPeople": {
+        "add": "Add",
+        "noResults": "No matching search results",
+        "searchPlaceholder": "Search for people and rooms to add",
+        "title": "Add people to your call",
+        "failedToAdd": "Failed to add participants"
+    },
+    "inlineDialogFailure": {
+        "msg": "We stumbled a bit.",
+        "retry": "Try again",
+        "support": "Support",
+        "supportMsg": "If this keeps happening, reach out to"
     }
 }

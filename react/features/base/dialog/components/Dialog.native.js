@@ -1,6 +1,6 @@
 import React from 'react';
-import { connect } from 'react-redux';
 import Prompt from 'react-native-prompt';
+import { connect } from 'react-redux';
 
 import { translate } from '../../i18n';
 
@@ -21,7 +21,7 @@ class Dialog extends AbstractDialog {
          * I18n key to put as body title.
          */
         bodyKey: React.PropTypes.string
-    }
+    };
 
     /**
      * Implements React's {@link Component#render()}.

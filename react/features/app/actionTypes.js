@@ -1,8 +1,6 @@
-import { Symbol } from '../base/react';
-
 /**
- * The type of the actions which signals that a specific App will mount (in the
- * terms of React).
+ * The type of (redux) action which signals that a specific App will mount (in
+ * React terms).
  *
  * {
  *     type: APP_WILL_MOUNT,
@@ -12,8 +10,8 @@ import { Symbol } from '../base/react';
 export const APP_WILL_MOUNT = Symbol('APP_WILL_MOUNT');
 
 /**
- * The type of the actions which signals that a specific App will unmount (in
- * the terms of React).
+ * The type of (redux) action which signals that a specific App will unmount (in
+ * React terms).
  *
  * {
  *     type: APP_WILL_UNMOUNT,

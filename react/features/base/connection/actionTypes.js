@@ -1,5 +1,3 @@
-import { Symbol } from '../react';
-
 /**
  * The type of (redux) action which signals that a connection disconnected.
  *
@@ -33,6 +31,16 @@ export const CONNECTION_ESTABLISHED = Symbol('CONNECTION_ESTABLISHED');
  * }
  */
 export const CONNECTION_FAILED = Symbol('CONNECTION_FAILED');
+
+/**
+ * The type of (redux) action which signals that a connection will connect.
+ *
+ * {
+ *     type: CONNECTION_WILL_CONNECT,
+ *     connection: JitsiConnection
+ * }
+ */
+export const CONNECTION_WILL_CONNECT = Symbol('CONNECTION_WILL_CONNECT');
 
 /**
  * The type of (redux) action which sets the location URL of the application,

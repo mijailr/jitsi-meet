@@ -12,6 +12,16 @@
     overflow: hidden;
 }
 
+.video_blurred_container {
+    height: 100%;
+    filter: blur(40px);
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
 .videocontainer {
     position: relative;
     text-align: center;
@@ -48,14 +58,26 @@
         padding: $toolbarPadding;
         padding-bottom: 0;
 
+        .connection-indicator,
+        span.indicator {
+            margin-right: em(5, 8);
+        }
+
+        span.indicator {
+            display: none;
+
+            &:last-child {
+                margin-right: 0;
+            }
+        }
+
+        .connection-indicator,
         span.indicator {
             position: relative;
             font-size: 8px;
             text-align: center;
             line-height: $thumbnailIndicatorSize;
-            display: none;
             padding: 0;
-            margin-right: em(5, 8);
             float: left;
             @include circle($thumbnailIndicatorSize);
             box-sizing: border-box;
@@ -63,10 +85,6 @@
             background: $dominantSpeakerBg;
             color: $thumbnailPictogramColor;
             border: $thumbnailIndicatorBorder solid $thumbnailPictogramColor;
-
-            &:last-child {
-                margin-right: 0;
-            }
 
             .indicatoricon {
                 @include absoluteAligning();
@@ -96,6 +114,11 @@
                     @include topLeft();
                     color: #FFFFFF;/*#15A1ED*/
                     overflow: hidden;
+                }
+
+                &_ninja
+                {
+                    font-size: 1.5em;
                 }
             }
 
@@ -134,8 +157,8 @@
     -o-transform: scale(-1, 1);
 }
 
-#localVideoWrapper>video,
-#localVideoWrapper>object {
+#localVideoWrapper video,
+#localVideoWrapper object {
     border-radius: $borderRadius !important;
     cursor: hand;
     object-fit: cover;
@@ -148,6 +171,10 @@
     text-align: center;
 }
 
+#largeVideoWrapper {
+    box-shadow: 0 0 20px -2px #444;
+}
+
 #largeVideo,
 #largeVideoWrapper
 {
@@ -156,8 +183,8 @@
 
 #sharedVideo,
 #etherpad,
-#localVideoWrapper>video,
-#localVideoWrapper>object,
+#localVideoWrapper video,
+#localVideoWrapper object,
 #localVideoWrapper,
 #largeVideoWrapper,
 #largeVideoWrapper>video,
@@ -274,11 +301,11 @@
   margin: 0px 0px 0px 5px;
 }
 
-#raisehandindicator {
+.raisehandindicator {
   background: $raiseHandBg;
 }
 
-#connectionindicator {
+.connection-indicator {
   background: $connectionIndicatorBg;
 }
 
@@ -288,18 +315,23 @@
     position: absolute;
     top: 0px;
     right: 0;
-    margin: 7px;
+    margin-top: 7px;
     z-index: $zindex3;
     width: 18px;
     height: 13px;
     color: #FFF;
-    font-size: 8pt;
+    font-size: 10pt;
+
+    >i{
+        cursor: hand;
+    }
 }
 
 /**
  * Audio indicator on video thumbnails.
  */
-.videocontainer>span.audioindicator {
+.videocontainer>span.audioindicator,
+.videocontainer>.audioindicator-container {
     position: absolute;
     display: inline-block;
     left: 6px;
@@ -495,18 +527,15 @@
                     0px 0px 1px rgba(0,0,0,0.3);
 }
 
-.audio-only-label {
-    cursor: default;
-    display: flex;
-    height: auto;
-    justify-content: center;
-    z-index: $centeredVideoLabelZ;
+.filmstrip-only {
+    #videoResolutionLabel {
+        display: none;
+    }
 }
-
-.audio-only-label,
 .video-state-indicator {
     background: $videoStateIndicatorBackground;
     color: $videoStateIndicatorColor;
+    cursor: pointer;
     font-size: 13px;
     height: 40px;
     line-height: 20px;
@@ -516,11 +545,15 @@
     border-radius: 50%;
     position: absolute;
     box-sizing: border-box;
+
+    i {
+        cursor: pointer;
+    }
 }
 
 #videoResolutionLabel,
-.centeredVideoLabel {
-    z-index: $centeredVideoLabelZ;
+.centeredVideoLabel.moveToCorner {
+    z-index: $tooltipsZ;
 }
 
 .centeredVideoLabel {
@@ -529,6 +562,7 @@
     display: none;
     -webkit-transition: all 2s 2s linear;
     transition: all 2s 2s linear;
+    z-index: $centeredVideoLabelZ;
 
     &.moveToCorner {
         bottom: auto;
@@ -594,6 +628,8 @@
 
 .video-state-indicator:hover,
 .video-state-indicator *:hover {
+    background: $toolbarSelectBackground;
+
     .video-state-indicator-menu {
         display: block;
     }

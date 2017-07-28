@@ -1,4 +1,12 @@
-import { Symbol } from '../base/react';
+/**
+ * The type of redux action which sets the visibility of {@code CallOverlay}.
+ *
+ * {
+ *     type: SET_CALL_OVERLAY_VISIBLE,
+ *     callOverlayVisible: boolean
+ * }
+ */
+export const SET_CALL_OVERLAY_VISIBLE = Symbol('SET_CALL_OVERLAY_VISIBLE');
 
 /**
  * The type of redux action which stores a specific JSON Web Token (JWT) into

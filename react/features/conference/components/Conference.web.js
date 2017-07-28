@@ -5,14 +5,16 @@ import { connect as reactReduxConnect } from 'react-redux';
 
 import { connect, disconnect } from '../../base/connection';
 import { DialogContainer } from '../../base/dialog';
-import { Watermarks } from '../../base/react';
+import { Filmstrip } from '../../filmstrip';
+import { LargeVideo } from '../../large-video';
+import { NotificationsContainer } from '../../notifications';
 import { OverlayContainer } from '../../overlay';
 import { Toolbox } from '../../toolbox';
 import { HideNotificationBarStyle } from '../../unsupported-browser';
-import { VideoStatusLabel } from '../../video-status-label';
 
 declare var $: Function;
 declare var APP: Object;
+declare var interfaceConfig: Object;
 
 /**
  * The conference page of the Web application.
@@ -26,7 +28,7 @@ class Conference extends Component {
      */
     static propTypes = {
         dispatch: React.PropTypes.func
-    }
+    };
 
     /**
      * Until we don't rewrite UI using react components
@@ -65,80 +67,28 @@ class Conference extends Component {
      * @returns {ReactElement}
      */
     render() {
+        const { filmStripOnly } = interfaceConfig;
+
         return (
             <div id = 'videoconference_page'>
-                <Toolbox />
-
                 <div id = 'videospace'>
-                    <div
-                        className = 'videocontainer'
-                        id = 'largeVideoContainer'>
-                        <div id = 'sharedVideo'>
-                            <div id = 'sharedVideoIFrame' />
-                        </div>
-                        <div id = 'etherpad' />
-
-                        <Watermarks />
-
-                        <div id = 'dominantSpeaker'>
-                            <div className = 'dynamic-shadow' />
-                            <img
-                                id = 'dominantSpeakerAvatar'
-                                src = '' />
-                        </div>
-                        <span id = 'remoteConnectionMessage' />
-                        <div id = 'largeVideoWrapper'>
-                            <video
-                                autoPlay = { true }
-                                id = 'largeVideo'
-                                muted = 'true' />
-                        </div>
-                        <span id = 'localConnectionMessage' />
-                        <VideoStatusLabel />
-                        <span
-                            className
-                                = 'video-state-indicator centeredVideoLabel'
-                            id = 'recordingLabel'>
-                            <span id = 'recordingLabelText' />
-                            <img
-                                className = 'recordingSpinner'
-                                id = 'recordingSpinner'
-                                src = 'images/spin.svg' />
-                        </span>
-                    </div>
-                    <div className = 'filmstrip'>
-                        <div
-                            className = 'filmstrip__videos'
-                            id = 'remoteVideos'>
-                            <span
-                                className = 'videocontainer'
-                                id = 'localVideoContainer'>
-                                <div className = 'videocontainer__background' />
-                                <span id = 'localVideoWrapper' />
-                                <audio
-                                    autoPlay = { true }
-                                    id = 'localAudio'
-                                    muted = { true } />
-                                <div className = 'videocontainer__toolbar' />
-                                <div className = 'videocontainer__toptoolbar' />
-                                <div
-                                    className
-                                        = 'videocontainer__hoverOverlay' />
-                            </span>
-                            <audio
-                                id = 'userJoined'
-                                preload = 'auto'
-                                src = 'sounds/joined.wav' />
-                            <audio
-                                id = 'userLeft'
-                                preload = 'auto'
-                                src = 'sounds/left.wav' />
-                        </div>
-                    </div>
+                    <LargeVideo />
+                    <Filmstrip displayToolbox = { filmStripOnly } />
                 </div>
 
+                { filmStripOnly ? null : <Toolbox /> }
+
                 <DialogContainer />
+                { filmStripOnly ? null : <NotificationsContainer /> }
                 <OverlayContainer />
+
+                {/*
+                  * Temasys automatically injects a notification bar, if
+                  * necessary, displayed at the top of the page notifying that
+                  * WebRTC is not installed or supported. We do not need/want
+                  * the notification bar in question because we have whole pages
+                  * dedicated to the respective scenarios.
+                  */}
                 <HideNotificationBarStyle />
             </div>
         );

@@ -3,9 +3,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    setToolbarHovered
-} from '../actions';
+import { setToolbarHovered } from '../actions';
 import ToolbarButton from './ToolbarButton';
 
 /**
@@ -37,11 +35,6 @@ class Toolbar extends Component {
         _onMouseOver: React.PropTypes.func,
 
         /**
-         * Contains button handlers.
-         */
-        buttonHandlers: React.PropTypes.object,
-
-        /**
          * Children of current React component.
          */
         children: React.PropTypes.element,
@@ -50,12 +43,6 @@ class Toolbar extends Component {
          * Toolbar's class name.
          */
         className: React.PropTypes.string,
-
-        /**
-         * If the toolbar requires splitter this property defines splitter
-         * index.
-         */
-        splitterIndex: React.PropTypes.number,
 
         /**
          * Map with toolbar buttons.
@@ -76,8 +63,6 @@ class Toolbar extends Component {
      */
     constructor(props) {
         super(props);
-
-        this._setButtonHandlers();
 
         // Bind callbacks to preverse this.
         this._renderToolbarButton = this._renderToolbarButton.bind(this);
@@ -114,12 +99,11 @@ class Toolbar extends Component {
      * @param {Array} acc - Toolbar buttons array.
      * @param {Array} keyValuePair - Key value pair containing button and its
      * key.
-     * @param {number} index - Index of the key value pair in the array.
-     * @returns {Array} Array of toolbar buttons and splitter if it's on.
      * @private
+     * @returns {Array} Array of toolbar buttons.
      */
-    _renderToolbarButton(acc: Array<*>, keyValuePair: Array<*>,
-                         index: number): Array<ReactElement<*>> {
+    _renderToolbarButton(acc: Array<*>,
+                         keyValuePair: Array<*>): Array<ReactElement<*>> {
         const [ key, button ] = keyValuePair;
 
         if (button.component) {
@@ -132,13 +116,7 @@ class Toolbar extends Component {
             return acc;
         }
 
-        const { splitterIndex, tooltipPosition } = this.props;
-
-        if (splitterIndex && index === splitterIndex) {
-            const splitter = <span className = 'toolbar__splitter' />;
-
-            acc.push(splitter);
-        }
+        const { tooltipPosition } = this.props;
 
         const { onClick, onMount, onUnmount } = button;
 
@@ -154,43 +132,14 @@ class Toolbar extends Component {
 
         return acc;
     }
-
-    /**
-     * Sets handlers for some of the buttons.
-     *
-     * @private
-     * @returns {void}
-     */
-    _setButtonHandlers(): void {
-        const {
-            buttonHandlers,
-            toolbarButtons
-        } = this.props;
-
-        // Only a few buttons have buttonHandlers defined, so it may be
-        // undefined or empty depending on the buttons rendered.
-        // TODO Merge the buttonHandlers and onClick properties and come up with
-        // a consistent event handling property.
-        buttonHandlers && Object.keys(buttonHandlers).forEach(key => {
-            let button = toolbarButtons.get(key);
-
-            if (button) {
-                button = {
-                    ...button,
-                    ...buttonHandlers[key]
-                };
-                toolbarButtons.set(key, button);
-            }
-        });
-    }
 }
 
 /**
  * Maps part of Redux actions to component's props.
  *
  * @param {Function} dispatch - Redux action dispatcher.
- * @returns {Object}
  * @private
+ * @returns {Object}
  */
 function _mapDispatchToProps(dispatch: Function): Object {
     return {
@@ -201,7 +150,7 @@ function _mapDispatchToProps(dispatch: Function): Object {
          * @returns {Object} Dispatched action.
          */
         _onMouseOut() {
-            return dispatch(setToolbarHovered(false));
+            dispatch(setToolbarHovered(false));
         },
 
         /**
@@ -211,9 +160,9 @@ function _mapDispatchToProps(dispatch: Function): Object {
          * @returns {Object} Dispatched action.
          */
         _onMouseOver() {
-            return dispatch(setToolbarHovered(true));
+            dispatch(setToolbarHovered(true));
         }
     };
 }
 
-export default connect(null, _mapDispatchToProps)(Toolbar);
+export default connect(undefined, _mapDispatchToProps)(Toolbar);

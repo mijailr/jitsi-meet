@@ -1,4 +1,5 @@
 import * as JitsiMeetConferenceEvents from '../../ConferenceEvents';
+import { parseJWTFromURLParams } from '../../react/features/jwt';
 import { getJitsiMeetTransport } from '../transport';
 
 import { API_ID } from './constants';
@@ -34,8 +35,12 @@ function initCommands() {
     commands = {
         'display-name':
             APP.conference.changeLocalDisplayName.bind(APP.conference),
-        'toggle-audio': () => APP.conference.toggleAudioMuted(true),
-        'toggle-video': () => APP.conference.toggleVideoMuted(true),
+        'toggle-audio': () => {
+            APP.conference.toggleAudioMuted(false /* no UI */);
+        },
+        'toggle-video': () => {
+            APP.conference.toggleVideoMuted(false /* no UI */);
+        },
         'toggle-film-strip': APP.UI.toggleFilmstrip,
         'toggle-chat': APP.UI.toggleChat,
         'toggle-contact-list': APP.UI.toggleContactList,
@@ -74,7 +79,15 @@ function onDesktopSharingEnabledChanged(enabled = false) {
  * @returns {boolean}
  */
 function shouldBeEnabled() {
-    return typeof API_ID === 'number';
+    return (
+        typeof API_ID === 'number'
+
+            // XXX Enable the API when a JSON Web Token (JWT) is specified in
+            // the location/URL because then it is very likely that the Jitsi
+            // Meet (Web) app is being used by an external/wrapping (Web) app
+            // and, consequently, the latter will need to communicate with the
+            // former. (The described logic is merely a heuristic though.)
+            || parseJWTFromURLParams());
 }
 
 /**
@@ -102,12 +115,10 @@ class API {
      * sends a message to the external application that API is initialized.
      *
      * @param {Object} options - Optional parameters.
-     * @param {boolean} options.forceEnable - True to forcefully enable the
-     * module.
      * @returns {void}
      */
-    init({ forceEnable } = {}) {
-        if (!shouldBeEnabled() && !forceEnable) {
+    init() {
+        if (!shouldBeEnabled()) {
             return;
         }
 

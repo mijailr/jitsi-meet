@@ -1,8 +1,7 @@
-import { appInit } from '../actions';
-import { AbstractApp } from './AbstractApp';
-import { getLocationContextRoot } from '../functions';
-
+import { getLocationContextRoot } from '../../base/util';
 import '../../room-lock';
+
+import { AbstractApp } from './AbstractApp';
 
 /**
  * Root application component.
@@ -15,7 +14,7 @@ export class App extends AbstractApp {
      *
      * @static
      */
-    static propTypes = AbstractApp.propTypes
+    static propTypes = AbstractApp.propTypes;
 
     /**
      * Initializes a new App instance.
@@ -36,17 +35,6 @@ export class App extends AbstractApp {
              */
             windowLocationContextRoot: this._getWindowLocationContextRoot()
         };
-    }
-
-    /**
-     * Inits the app before component will mount.
-     *
-     * @inheritdoc
-     */
-    componentWillMount(...args) {
-        super.componentWillMount(...args);
-
-        this._getStore().dispatch(appInit());
     }
 
     /**
@@ -77,22 +65,27 @@ export class App extends AbstractApp {
      * @returns {void}
      */
     _navigate(route) {
-        let path = route.path;
-        const store = this._getStore();
+        let path;
 
-        // The syntax :room bellow is defined by react-router. It "matches a URL
-        // segment up to the next /, ?, or #. The matched string is called a
-        // param."
-        path
-            = path.replace(
-                /:room/g,
-                store.getState()['features/base/conference'].room);
-        path = this._routePath2WindowLocationPathname(path);
+        if (route) {
+            path = route.path;
+
+            const store = this._getStore();
+
+            // The syntax :room bellow is defined by react-router. It "matches a
+            // URL segment up to the next /, ?, or #. The matched string is
+            // called a param."
+            path
+                = path.replace(
+                    /:room/g,
+                    store.getState()['features/base/conference'].room);
+            path = this._routePath2WindowLocationPathname(path);
+        }
 
         // Navigate to the specified Route.
         const windowLocation = this.getWindowLocation();
 
-        if (windowLocation.pathname === path) {
+        if (!route || windowLocation.pathname === path) {
             // The browser is at the specified path already and what remains is
             // to make this App instance aware of the route to be rendered at
             // the current location.

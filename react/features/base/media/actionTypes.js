@@ -1,5 +1,3 @@
-import { Symbol } from '../react';
-
 /**
  * The type of (redux) action to set the muted state of the local audio.
  *
@@ -11,6 +9,16 @@ import { Symbol } from '../react';
 export const SET_AUDIO_MUTED = Symbol('SET_AUDIO_MUTED');
 
 /**
+ * The type of (redux) action to adjust the availability of the local audio.
+ *
+ * {
+ *     type: SET_AUDIO_AVAILABLE,
+ *     muted: boolean
+ * }
+ */
+export const SET_AUDIO_AVAILABLE = Symbol('SET_AUDIO_AVAILABLE');
+
+/**
  * The type of (redux) action to set the facing mode of the local video camera
  * to a specific value.
  *
@@ -20,6 +28,16 @@ export const SET_AUDIO_MUTED = Symbol('SET_AUDIO_MUTED');
  * }
  */
 export const SET_CAMERA_FACING_MODE = Symbol('SET_CAMERA_FACING_MODE');
+
+/**
+ * The type of (redux) action to adjust the availability of the local video.
+ *
+ * {
+ *     type: SET_VIDEO_AVAILABLE,
+ *     available: boolean
+ * }
+ */
+export const SET_VIDEO_AVAILABLE = Symbol('SET_VIDEO_AVAILABLE');
 
 /**
  * The type of (redux) action to set the muted state of the local video.

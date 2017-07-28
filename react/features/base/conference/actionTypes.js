@@ -1,5 +1,3 @@
-import { Symbol } from '../react';
-
 /**
  * The type of (redux) action which signals that a specific conference failed.
  *
@@ -38,7 +36,7 @@ export const CONFERENCE_LEFT = Symbol('CONFERENCE_LEFT');
  *
  * {
  *     type: CONFERENCE_WILL_JOIN,
- *     room: string
+ *     conference: JitsiConference
  * }
  */
 export const CONFERENCE_WILL_JOIN = Symbol('CONFERENCE_WILL_JOIN');

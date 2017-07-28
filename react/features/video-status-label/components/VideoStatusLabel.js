@@ -29,9 +29,21 @@ export class VideoStatusLabel extends Component {
         _conferenceStarted: React.PropTypes.bool,
 
         /**
+         * Whether or not the filmstrip is displayed with remote videos. Used to
+         * determine display classes to set.
+         */
+        _filmstripVisible: React.PropTypes.bool,
+
+        /**
          * Whether or not a high-definition large video is displayed.
          */
         _largeVideoHD: React.PropTypes.bool,
+
+        /**
+         * Whether or note remote videos are visible in the filmstrip,
+         * regardless of count. Used to determine display classes to set.
+         */
+        _remoteVideosVisible: React.PropTypes.bool,
 
         /**
          * Invoked to request toggling of audio only mode.
@@ -42,7 +54,7 @@ export class VideoStatusLabel extends Component {
          * Invoked to obtain translated strings.
          */
         t: React.PropTypes.func
-    }
+    };
 
     /**
      * Initializes a new {@code VideoStatusLabel} instance.
@@ -53,8 +65,30 @@ export class VideoStatusLabel extends Component {
     constructor(props) {
         super(props);
 
+        this.state = {
+            // Whether or not the filmstrip is transitioning from not visible
+            // to visible. Used to set a transition class for animation.
+            togglingToVisible: false
+        };
+
         // Bind event handler so it is only bound once for every instance.
         this._toggleAudioOnly = this._toggleAudioOnly.bind(this);
+    }
+
+    /**
+     * Updates the state for whether or not the filmstrip is being toggled to
+     * display after having being hidden.
+     *
+     * @inheritdoc
+     * @param {Object} nextProps - The read-only props which this Component will
+     * receive.
+     * @returns {void}
+     */
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            togglingToVisible: nextProps._filmstripVisible
+                && !this.props._filmstripVisible
+        });
     }
 
     /**
@@ -64,16 +98,19 @@ export class VideoStatusLabel extends Component {
      * @returns {ReactElement}
      */
     render() {
-        const { _audioOnly, _conferenceStarted, _largeVideoHD, t } = this.props;
+        const {
+            _audioOnly,
+            _conferenceStarted,
+            _filmstripVisible,
+            _remoteVideosVisible,
+            _largeVideoHD,
+            t
+        } = this.props;
 
-        // FIXME These truthy checks should not be necessary. The
-        // _conferenceStarted check is used to be defensive against toggling
-        // audio only mode while there is no conference and hides the need for
-        // error handling around audio only mode toggling. The _largeVideoHD
-        // check is used to prevent the label from displaying while the video
-        // resolution status is unknown but ties this component to the
-        // LargeVideoManager.
-        if (!_conferenceStarted || _largeVideoHD === undefined) {
+        // FIXME The _conferenceStarted check is used to be defensive against
+        // toggling audio only mode while there is no conference and hides the
+        // need for error handling around audio only mode toggling.
+        if (!_conferenceStarted) {
             return null;
         }
 
@@ -86,9 +123,21 @@ export class VideoStatusLabel extends Component {
                 ? t('videoStatus.hd') : t('videoStatus.sd');
         }
 
+        // Determine which classes should be set on the component. These classes
+        // will used to help with animations and setting position.
+        const baseClasses = 'video-state-indicator moveToCorner';
+        const filmstrip
+            = _filmstripVisible ? 'with-filmstrip' : 'without-filmstrip';
+        const remoteVideosVisible = _remoteVideosVisible
+            ? 'with-remote-videos'
+            : 'without-remote-videos';
+        const opening = this.state.togglingToVisible ? 'opening' : '';
+        const classNames
+            = `${baseClasses} ${filmstrip} ${remoteVideosVisible} ${opening}`;
+
         return (
             <div
-                className = 'video-state-indicator moveToCorner'
+                className = { classNames }
                 id = 'videoResolutionLabel' >
                 { displayedLabel }
                 { this._renderVideonMenu() }
@@ -147,7 +196,9 @@ export class VideoStatusLabel extends Component {
  * @returns {{
  *     _audioOnly: boolean,
  *     _conferenceStarted: boolean,
- *     _largeVideoHD: (boolean|undefined)
+ *     _filmstripVisible: true,
+ *     _largeVideoHD: (boolean|undefined),
+ *     _remoteVideosVisible: boolean
  * }}
  */
 function _mapStateToProps(state) {
@@ -156,11 +207,17 @@ function _mapStateToProps(state) {
         conference,
         isLargeVideoHD
     } = state['features/base/conference'];
+    const {
+        remoteVideosVisible,
+        visible
+    } = state['features/filmstrip'];
 
     return {
         _audioOnly: audioOnly,
         _conferenceStarted: Boolean(conference),
-        _largeVideoHD: isLargeVideoHD
+        _filmstripVisible: visible,
+        _largeVideoHD: isLargeVideoHD,
+        _remoteVideosVisible: remoteVideosVisible
     };
 }
 

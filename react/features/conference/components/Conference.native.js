@@ -6,9 +6,10 @@ import { DialogContainer } from '../../base/dialog';
 import { Container } from '../../base/react';
 import { Filmstrip } from '../../filmstrip';
 import { LargeVideo } from '../../large-video';
+import { OverlayContainer } from '../../overlay';
 import { setToolboxVisible, Toolbox } from '../../toolbox';
 
-import { styles } from './styles';
+import styles from './styles';
 
 /**
  * The timeout in milliseconds after which the Toolbox will be hidden.
@@ -130,11 +131,34 @@ class Conference extends Component {
                 style = { styles.conference }
                 touchFeedback = { false }>
 
+                {/*
+                  * The LargeVideo is the lowermost stacking layer.
+                  */}
                 <LargeVideo />
 
-                <Toolbox />
+                {/*
+                  * The Filmstrip is in a stacking layer above the LargeVideo.
+                  * The LargeVideo and the Filmstrip form what the Web/React app
+                  * calls "videospace". Presumably, the name and grouping stem
+                  * from the fact that these two React Components depict the
+                  * videos of the conference's participants.
+                  */}
                 <Filmstrip />
 
+                {/*
+                  * The overlays need to be bellow the Toolbox so that the user
+                  * may tap the ToolbarButtons.
+                  */}
+                <OverlayContainer />
+
+                {/*
+                  * The Toolbox is in a stacking layer above the Filmstrip.
+                  */}
+                <Toolbox />
+
+                {/*
+                  * The dialogs are in the topmost stacking layers.
+                  */}
                 <DialogContainer />
             </Container>
         );
@@ -204,7 +228,7 @@ function _mapDispatchToProps(dispatch) {
          * @private
          */
         _onConnect() {
-            return dispatch(connect());
+            dispatch(connect());
         },
 
         /**
@@ -214,7 +238,7 @@ function _mapDispatchToProps(dispatch) {
          * @private
          */
         _onDisconnect() {
-            return dispatch(disconnect());
+            dispatch(disconnect());
         },
 
         /**
@@ -226,7 +250,7 @@ function _mapDispatchToProps(dispatch) {
          * @private
          */
         _setToolboxVisible(visible: boolean) {
-            return dispatch(setToolboxVisible(visible));
+            dispatch(setToolboxVisible(visible));
         }
     };
 }
@@ -253,4 +277,4 @@ function _mapStateToProps(state) {
 }
 
 export default reactReduxConnect(_mapStateToProps, _mapDispatchToProps)(
-        Conference);
+    Conference);

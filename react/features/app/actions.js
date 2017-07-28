@@ -2,25 +2,11 @@ import { setRoom } from '../base/conference';
 import { setLocationURL } from '../base/connection';
 import { setConfig } from '../base/config';
 import { loadConfig } from '../base/lib-jitsi-meet';
+import { parseURIString } from '../base/util';
 
 import { APP_WILL_MOUNT, APP_WILL_UNMOUNT } from './actionTypes';
-import {
-    _getRouteToRender,
-    _parseURIString,
-    init
-} from './functions';
 
-/**
- * Temporary solution. Should dispatch actions related to initial settings of
- * the app like setting log levels, reading the config parameters from query
- * string etc.
- *
- * @returns {Function}
- */
-export function appInit() {
-    return (dispatch: Dispatch<*>, getState: Function) =>
-        init(getState());
-}
+declare var APP: Object;
 
 /**
  * Triggers an in-app navigation to a specific route. Allows navigation to be
@@ -28,14 +14,12 @@ export function appInit() {
  *
  * @param {(string|undefined)} uri - The URI to which to navigate. It may be a
  * full URL with an HTTP(S) scheme, a full or partial URI with the app-specific
- * sheme, or a mere room name.
+ * scheme, or a mere room name.
  * @returns {Function}
  */
 export function appNavigate(uri: ?string) {
     return (dispatch: Dispatch<*>, getState: Function) =>
-        _appNavigateToOptionalLocation(
-            dispatch, getState,
-            _parseURIString(uri));
+        _appNavigateToOptionalLocation(dispatch, getState, parseURIString(uri));
 }
 
 /**
@@ -64,7 +48,7 @@ function _appNavigateToMandatoryLocation(
 
     if (oldHost === newHost) {
         dispatchSetLocationURL();
-        dispatchSetRoomAndNavigate();
+        dispatchSetRoom();
     } else {
         // If the host has changed, we need to load the config of the new host
         // and set it, and only after that we can navigate to a different route.
@@ -72,7 +56,7 @@ function _appNavigateToMandatoryLocation(
             .then(
                 config => configLoaded(/* err */ undefined, config),
                 err => configLoaded(err, /* config */ undefined))
-            .then(dispatchSetRoomAndNavigate);
+            .then(dispatchSetRoom);
     }
 
     /**
@@ -106,17 +90,7 @@ function _appNavigateToMandatoryLocation(
      * @returns {void}
      */
     function dispatchSetLocationURL() {
-        dispatch(
-            setLocationURL(
-                new URL(
-                    (newLocation.protocol || 'https:')
-
-                        // TODO userinfo
-
-                        + newLocation.host
-                        + (newLocation.pathname || '/')
-                        + newLocation.search
-                        + newLocation.hash)));
+        dispatch(setLocationURL(new URL(newLocation.toString())));
     }
 
     /**
@@ -124,8 +98,8 @@ function _appNavigateToMandatoryLocation(
      *
      * @returns {void}
      */
-    function dispatchSetRoomAndNavigate() {
-        dispatch(_setRoomAndNavigate(newLocation.room));
+    function dispatchSetRoom() {
+        dispatch(setRoom(newLocation.room));
     }
 }
 
@@ -147,7 +121,7 @@ function _appNavigateToOptionalLocation(
     // default.
     if (!location || !location.host) {
         const defaultLocation
-            = _parseURIString(getState()['features/app'].app._getDefaultURL());
+            = parseURIString(getState()['features/app'].app._getDefaultURL());
 
         if (location) {
             location.host = defaultLocation.host;
@@ -163,9 +137,7 @@ function _appNavigateToOptionalLocation(
         }
     }
 
-    if (!location.protocol) {
-        location.protocol = 'https:';
-    }
+    location.protocol || (location.protocol = 'https:');
 
     _appNavigateToMandatoryLocation(dispatch, getState, location);
 }
@@ -180,9 +152,20 @@ function _appNavigateToOptionalLocation(
  * }}
  */
 export function appWillMount(app) {
-    return {
-        type: APP_WILL_MOUNT,
-        app
+    return (dispatch: Dispatch<*>) => {
+        dispatch({
+            type: APP_WILL_MOUNT,
+            app
+        });
+
+        // TODO There was a redux action creator appInit which I did not like
+        // because we already had the redux action creator appWillMount and,
+        // respectively, the redux action APP_WILL_MOUNT. So I set out to remove
+        // appInit and managed to move everything it was doing but the
+        // following. Which is not extremely bad because we haven't moved the
+        // API module into its own feature yet so we're bound to work on that in
+        // the future.
+        typeof APP === 'object' && APP.API.init();
     };
 }
 
@@ -205,7 +188,7 @@ export function appWillUnmount(app) {
 /**
  * Loads config.js from a specific host.
  *
- * @param {Object} location - The loction URI which specifies the host to load
+ * @param {Object} location - The location URI which specifies the host to load
  * the config.js from.
  * @returns {Promise<Object>}
  */
@@ -214,40 +197,11 @@ function _loadConfig(location: Object) {
 
     // The React Native app supports an app-specific scheme which is sure to not
     // be supported by fetch (or whatever loadConfig utilizes).
-    if (protocol !== 'http:' && protocol !== 'https:') {
-        protocol = 'https:';
-    }
+    protocol !== 'http:' && protocol !== 'https:' && (protocol = 'https:');
 
     // TDOO userinfo
 
-    return loadConfig(protocol + location.host + (location.contextRoot || '/'));
-}
-
-/**
- * Navigates to a route in accord with a specific Redux state.
- *
- * @param {Object} state - The Redux state which determines/identifies the route
- * to navigate to.
- * @private
- * @returns {void}
- */
-function _navigate(state) {
-    const app = state['features/app'].app;
-    const routeToRender = _getRouteToRender(state);
-
-    app._navigate(routeToRender);
-}
-
-/**
- * Sets room and navigates to new route if needed.
- *
- * @param {string} newRoom - New room name.
- * @private
- * @returns {Function}
- */
-function _setRoomAndNavigate(newRoom) {
-    return (dispatch, getState) => {
-        dispatch(setRoom(newRoom));
-        _navigate(getState());
-    };
+    return (
+        loadConfig(
+            `${protocol}//${location.host}${location.contextRoot || '/'}`));
 }

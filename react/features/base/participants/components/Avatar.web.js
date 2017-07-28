@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 /**
- * Display a participant avatar.
+ * Implements an avatar as a React/Web {@link Component}.
  */
 export default class Avatar extends Component {
     /**
@@ -11,12 +11,12 @@ export default class Avatar extends Component {
      */
     static propTypes = {
         /**
-         * The URL for the avatar.
+         * The URI of the {@link Avatar}.
          *
          * @type {string}
          */
         uri: React.PropTypes.string
-    }
+    };
 
     /**
      * Implements React's {@link Component#render()}.
@@ -24,6 +24,16 @@ export default class Avatar extends Component {
      * @inheritdoc
      */
     render() {
-        return <img src = { this.props.uri } />;
+        // Propagate all props of this Avatar but the ones consumed by this
+        // Avatar to the img it renders.
+
+        // eslint-disable-next-line no-unused-vars
+        const { uri, ...props } = this.props;
+
+        return (
+            <img
+                { ...props }
+                src = { uri } />
+        );
     }
 }

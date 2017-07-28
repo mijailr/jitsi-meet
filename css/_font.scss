@@ -25,6 +25,9 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-thumb-menu:before {
+    content: "\e5d4";
+}
 .icon-mic-camera-combined:before {
     content: "\e903";
 }
@@ -51,9 +54,6 @@
 }
 .icon-share-doc:before {
     content: "\e908";
-}
-.icon-telephone:before {
-    content: "\e909";
 }
 .icon-kick:before {
     content: "\e904";
@@ -90,6 +90,9 @@
 }
 .icon-mic-disabled:before {
     content: "\e912";
+}
+.icon-ninja:before {
+    content: "\e909";
 }
 .icon-raised-hand:before {
     content: "\e91e";
@@ -147,4 +150,10 @@
 }
 .icon-visibility-off:before {
     content: "\e924";
+}
+.icon-telephone:before {
+    content: "\e0cd";
+}
+.icon-add:before {
+    content: "\e145";
 }

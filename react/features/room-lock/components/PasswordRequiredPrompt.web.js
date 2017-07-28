@@ -29,7 +29,7 @@ class PasswordRequiredPrompt extends Component {
         conference: React.PropTypes.object,
         dispatch: React.PropTypes.func,
         t: React.PropTypes.func
-    }
+    };
 
     /**
      * Initializes a new PasswordRequiredPrompt instance.
@@ -75,6 +75,7 @@ class PasswordRequiredPrompt extends Component {
         return (
             <div>
                 <AKFieldText
+                    autoFocus = { true }
                     compact = { true }
                     label = { this.props.t('dialog.passwordLabel') }
                     name = 'lockKey'

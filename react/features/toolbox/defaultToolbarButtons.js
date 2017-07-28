@@ -2,54 +2,30 @@
 
 import React from 'react';
 
+import { openDeviceSelectionDialog } from '../device-selection';
+import { openDialOutDialog } from '../dial-out';
+import { openAddPeopleDialog, openInviteDialog } from '../invite';
 import UIEvents from '../../../service/UI/UIEvents';
 
-import { openInviteDialog } from '../invite';
-
-import { AudioOnlyButton } from './components';
-
 declare var APP: Object;
-declare var config: Object;
+declare var interfaceConfig: Object;
 declare var JitsiMeetJS: Object;
-
-/**
- * Shows SIP number dialog.
- *
- * @returns {void}
- */
-function _showSIPNumberInput() {
-    const defaultNumber = config.defaultSipNumber || '';
-    const msgString
-        = `<input class="input-control" name="sipNumber" type="text" value="${
-            defaultNumber}" autofocus>`;
-
-    APP.UI.messageHandler.openTwoButtonDialog({
-        focus: ':input:first',
-        leftButtonKey: 'dialog.Dial',
-        msgString,
-        titleKey: 'dialog.sipMsg',
-
-        // eslint-disable-next-line max-params
-        submitFunction(event, value, message, formValues) {
-            const { sipNumber } = formValues;
-
-            if (value && sipNumber) {
-                APP.UI.emitEvent(UIEvents.SIP_DIAL, sipNumber);
-            }
-        }
-    });
-}
 
 /**
  * All toolbar buttons' descriptors.
  */
-export default {
-    /**
-     * The descriptor of the audio only toolbar button. Defers actual
-     * descriptor implementation to the {@code AudioOnlyButton} component.
-     */
-    audioonly: {
-        component: AudioOnlyButton
+const buttons: Object = {
+    addtocall: {
+        classNames: [ 'button', 'icon-add' ],
+        enabled: true,
+        id: 'toolbar_button_add',
+        isDisplayed: () => !APP.store.getState()['features/jwt'].isGuest,
+        onClick() {
+            JitsiMeetJS.analytics.sendEvent('toolbar.add.clicked');
+
+            return openAddPeopleDialog();
+        },
+        tooltipKey: 'toolbar.addPeople'
     },
 
     /**
@@ -58,7 +34,7 @@ export default {
     camera: {
         classNames: [ 'button', 'icon-camera' ],
         enabled: true,
-        filmstripOnlyEnabled: true,
+        isDisplayed: () => true,
         id: 'toolbar_button_camera',
         onClick() {
             if (APP.conference.videoMuted) {
@@ -180,6 +156,44 @@ export default {
     },
 
     /**
+     * The descriptor of the dial out toolbar button.
+     */
+    dialout: {
+        classNames: [ 'button', 'icon-telephone' ],
+        enabled: true,
+
+        // Will be displayed once the SIP calls functionality is detected.
+        hidden: true,
+        id: 'toolbar_button_dial_out',
+        onClick() {
+            JitsiMeetJS.analytics.sendEvent('toolbar.sip.clicked');
+
+            return openDialOutDialog();
+        },
+        tooltipKey: 'dialOut.dialOut'
+    },
+
+    /**
+     * The descriptor of the device selection toolbar button.
+     */
+    fodeviceselection: {
+        classNames: [ 'button', 'icon-settings' ],
+        enabled: true,
+        isDisplayed() {
+            return interfaceConfig.filmStripOnly;
+        },
+        id: 'toolbar_button_fodeviceselection',
+        onClick() {
+            JitsiMeetJS.analytics.sendEvent(
+                'toolbar.fodeviceselection.toggled');
+
+            return openDeviceSelectionDialog();
+        },
+        sideContainerId: 'settings_container',
+        tooltipKey: 'toolbar.Settings'
+    },
+
+    /**
      * The descriptor of the dialpad toolbar button.
      */
     dialpad: {
@@ -238,7 +252,7 @@ export default {
     hangup: {
         classNames: [ 'button', 'icon-hangup', 'button_hangup' ],
         enabled: true,
-        filmstripOnlyEnabled: true,
+        isDisplayed: () => true,
         id: 'toolbar_button_hangup',
         onClick() {
             JitsiMeetJS.analytics.sendEvent('toolbar.hangup');
@@ -256,7 +270,8 @@ export default {
         id: 'toolbar_button_link',
         onClick() {
             JitsiMeetJS.analytics.sendEvent('toolbar.invite.clicked');
-            APP.store.dispatch(openInviteDialog());
+
+            return openInviteDialog();
         },
         tooltipKey: 'toolbar.invite'
     },
@@ -267,7 +282,7 @@ export default {
     microphone: {
         classNames: [ 'button', 'icon-microphone' ],
         enabled: true,
-        filmstripOnlyEnabled: true,
+        isDisplayed: () => true,
         id: 'toolbar_button_mute',
         onClick() {
             const sharedVideoManager = APP.UI.getSharedVideoManager();
@@ -405,22 +420,16 @@ export default {
             }
         ],
         tooltipKey: 'toolbar.sharedvideo'
-    },
-
-    /**
-     * The descriptor of the SIP call toolbar button.
-     */
-    sip: {
-        classNames: [ 'button', 'icon-telephone' ],
-        enabled: true,
-
-        // Will be displayed once the SIP calls functionality is detected.
-        hidden: true,
-        id: 'toolbar_button_sip',
-        onClick() {
-            JitsiMeetJS.analytics.sendEvent('toolbar.sip.clicked');
-            _showSIPNumberInput();
-        },
-        tooltipKey: 'toolbar.sip'
     }
 };
+
+
+Object.keys(buttons).forEach(name => {
+    const button = buttons[name];
+
+    if (!button.isDisplayed) {
+        button.isDisplayed = () => !interfaceConfig.filmStripOnly;
+    }
+});
+
+export default buttons;

@@ -41,16 +41,11 @@ body, input, textarea, keygen, select, button {
 button, input, select, textarea {
     margin: 0;
     vertical-align: baseline;
-    color: $inputColor;
     font-size: 1em;
 }
 
 button, select, input[type="button"],
 input[type="reset"], input[type="submit"] {
-    height: 32px;
-    line-height: 32px;
-    padding-left: 4px;
-    padding-right: 4px;
     cursor: pointer;
 }
 
@@ -149,4 +144,29 @@ form {
 #inviteLinkRef {
     -webkit-user-select: text;
     user-select: text;
+}
+
+/**
+ * Re-style default OS scrollbar.
+ */
+::-webkit-scrollbar {
+    background: transparent;
+    width: 7px;
+}
+
+::-webkit-scrollbar-button {
+    display: none;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-track-piece {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .5);
+    border-radius: 4px;
 }

@@ -43,6 +43,10 @@ export function getButtonAttributesByProps(props: Object = {})
         result.style = { display: 'none' };
     }
 
+    if (props.tooltipText) {
+        result.content = props.tooltipText;
+    }
+
     return result;
 }
 
@@ -52,9 +56,11 @@ export function getButtonAttributesByProps(props: Object = {})
  * Returns an object which contains the default buttons for the primary and
  * secondary toolbars.
  *
+ * @param {Object} buttonHandlers - Contains additional toolbox button
+ * handlers.
  * @returns {Object}
  */
-export function getDefaultToolboxButtons(): Object {
+export function getDefaultToolboxButtons(buttonHandlers: Object): Object {
     let toolbarButtons = {
         primaryToolbarButtons: new Map(),
         secondaryToolbarButtons: new Map()
@@ -62,21 +68,28 @@ export function getDefaultToolboxButtons(): Object {
 
     if (typeof interfaceConfig !== 'undefined'
             && interfaceConfig.TOOLBAR_BUTTONS) {
-        const { filmStripOnly } = interfaceConfig;
 
         toolbarButtons
             = interfaceConfig.TOOLBAR_BUTTONS.reduce(
                 (acc, buttonName) => {
-                    const button = defaultToolbarButtons[buttonName];
+                    let button = defaultToolbarButtons[buttonName];
+                    const currentButtonHandlers = buttonHandlers[buttonName];
 
                     if (button) {
                         const place = _getToolbarButtonPlace(buttonName);
 
                         button.buttonName = buttonName;
 
-                        // In filmstrip-only mode we only add a button if it's
-                        // filmstrip-only enabled.
-                        if (!filmStripOnly || button.filmstripOnlyEnabled) {
+                        if (currentButtonHandlers) {
+                            button = {
+                                ...button,
+                                ...currentButtonHandlers
+                            };
+                        }
+
+                        // If isDisplayed method is not defined, display the
+                        // button only for non-filmstripOnly mode
+                        if (button.isDisplayed()) {
                             acc[place].set(buttonName, button);
                         }
                     }
@@ -87,21 +100,6 @@ export function getDefaultToolboxButtons(): Object {
     }
 
     return toolbarButtons;
-}
-
-/**
- * Get place for toolbar button. Now it can be in the primary Toolbar or in the
- * secondary Toolbar.
- *
- * @param {string} btn - Button name.
- * @private
- * @returns {string}
- */
-function _getToolbarButtonPlace(btn) {
-    return (
-        interfaceConfig.MAIN_TOOLBAR_BUTTONS.includes(btn)
-            ? 'primaryToolbarButtons'
-            : 'secondaryToolbarButtons');
 }
 
 /**
@@ -170,4 +168,19 @@ export function showCustomToolbarPopup(
     } else {
         AJS.$(popupSelectorID).tooltip('hide');
     }
+}
+
+/**
+ * Get place for toolbar button. Now it can be in the primary Toolbar or in the
+ * secondary Toolbar.
+ *
+ * @param {string} btn - Button name.
+ * @private
+ * @returns {string}
+ */
+function _getToolbarButtonPlace(btn) {
+    return (
+        interfaceConfig.MAIN_TOOLBAR_BUTTONS.includes(btn)
+            ? 'primaryToolbarButtons'
+            : 'secondaryToolbarButtons');
 }
